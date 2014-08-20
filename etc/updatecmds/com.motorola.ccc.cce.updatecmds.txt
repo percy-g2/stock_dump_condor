@@ -1,0 +1,21 @@
+# Migrate data to the new package from the old one
+com.motorola.ccc.cce:com.motorola.blur.service.blur
+    cache
+
+com.motorola.ccc.cce:com.motorola.blur.service.blur
+    databases/blur_xmpp_info.db
+
+com.motorola.ccc.cce:com.motorola.blur.service.blur
+    databases/blur_xmpp_info.db-journal
+
+com.motorola.ccc.cce:com.motorola.blur.service.blur
+    shared_prefs/blur_services_config.xml
+
+com.motorola.ccc.cce:com.motorola.blur.service.blur
+    shared_prefs/NotifDataListener.xml
+
+com.motorola.ccc.cce:com.motorola.blur.service.blur
+    files
+
+com.motorola.ccc.cce:com.motorola.blur.service.blur
+    lib

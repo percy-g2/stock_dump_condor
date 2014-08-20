@@ -1,0 +1,85 @@
+#!/system/bin/sh
+
+doLog(){
+    log -p $1 -t bug2go-bugreport-oem $2
+}
+
+collectAplogd(){
+    doLog d "Collecting aplogd logs"
+    # Grab the system logs.
+    aplogcat --dump --output ${outputPath}/aplogcat- --temp ${outputPath} --bytes 100M
+    # Grab the logs left by aplogd itself (for debugging missing log issues).
+    cat /data/aplogd/aplogd-log.bak.txt > ${outputPath}/aplogd-log.txt
+    cat /data/aplogd/aplogd-log.txt >> ${outputPath}/aplogd-log.txt
+    chmod 640 ${outputPath}/aplogd-log.txt
+}
+
+collectMsm8226Bp(){
+    # Grab the last 50 MB of logs if the logger is active.
+    case $(getprop persist.sys.diag_mdlog.on) in
+    1)
+        doLog d "Collecting MSM8226 BP logs"
+        logwrapper diag_mdlog-getlogs -o $outputPath -b 52428800
+    ;;
+    esac
+}
+
+collectBatteryTracer(){
+    doLog d "Collecting Battery Tracer logs"
+    local battTracerLocs="\
+        /data/data/com.motorola.tools.batterytracersdcard/databases/current\
+        /data/data/com.motorola.tools.batterytracersdcard/databases/backup0"
+    for loc in $battTracerLocs; do
+        for file in $(ls $loc/*.btd); do
+            outFile=BT${file#*BT};
+            logwrapper cp $file ${outputPath}/${outFile}
+            chmod 640 ${outputPath}/${outFile}
+        done
+    done
+}
+
+collectEnergyMonitor(){
+    doLog d "Collecting EnergyMonitor logs"
+
+    energyMonitorHome="/storage/sdcard0/energy_monitor"
+    energyMonitorReport="${outputPath}/sdcard_energy_monitor_enmon_report.tar"
+
+    if [ ! -d "${energyMonitorHome}" ]
+    then
+        return
+    fi
+
+    # Energy monitor data files have suffix .bin
+    emFileList=""
+    for f in $(ls ${energyMonitorHome}/*.bin ${energyMonitorHome}/*.xml 2>/dev/null)
+    do
+        emFileList="${emFileList} ${f##*/}"
+    done
+    if [ ! -z "${emFileList}" ]
+    then
+        /system/bin/busybox tar cf $energyMonitorReport -C $energyMonitorHome ${emFileList}
+    fi
+}
+
+collectPowerSupplyLogger(){
+    doLog d "Collecting Power Supply Logger logs"
+    for file in power_supply_info.bin old_power_supply_info.bin
+    do
+        logwrapper cp /data/power_supply_logger/$file ${outputPath}/${file}
+        chmod 640 ${outputPath}/${file}
+    done
+}
+
+reportId=$1
+outputPath=$2
+
+if [ "$(getprop ro.bug2go.external_mode)" != "true" ]
+then
+    collectAplogd
+    collectMsm8226Bp
+    collectBatteryTracer
+    collectEnergyMonitor
+    collectPowerSupplyLogger
+else
+    collectAplogd
+fi

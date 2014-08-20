@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<permissions>
+    <library name="com.motorola.adam"
+             file="/system/framework/com.motorola.adam-common.jar"/>
+</permissions>

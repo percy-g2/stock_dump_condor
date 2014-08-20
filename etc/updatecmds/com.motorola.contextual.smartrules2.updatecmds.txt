@@ -1,0 +1,6 @@
+# Data migration script for Motorola Assist.
+# Migrate to com.motorola.contextual.smartrules2 from old com.motorola.contextaware
+#
+# Migrate UI preferences
+com.motorola.contextual.smartrules2:com.motorola.contextaware
+    shared_prefs/com.motorola.contextaware_preferences.xml
